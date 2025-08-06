@@ -2,11 +2,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis
+} from "@/components/ui/pagination";
 import { ExternalLink, Github, Code2, Eye, Server, Brain, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const ProjectsSection = () => {
   const navigate = useNavigate();
+
+  // Pagination state for each tab
+  const [currentPages, setCurrentPages] = useState({
+    frontend: 1,
+    api: 1,
+    ai: 1,
+    vibe: 1
+  });
+
+  const projectsPerPage = 6; // 2 projects per page for better demonstration
 
   const projects = {
     frontend: [
@@ -106,6 +126,78 @@ const ProjectsSection = () => {
     vibe: <Sparkles className="h-4 w-4" />
   };
 
+  // Pagination helpers
+  const getPaginatedProjects = (category: keyof typeof projects) => {
+    const categoryProjects = projects[category];
+    const currentPage = currentPages[category];
+    const totalPages = Math.ceil(categoryProjects.length / projectsPerPage);
+
+    const startIndex = (currentPage - 1) * projectsPerPage;
+    const endIndex = startIndex + projectsPerPage;
+    const paginatedProjects = categoryProjects.slice(startIndex, endIndex);
+
+    return {
+      projects: paginatedProjects,
+      totalPages,
+      currentPage,
+      totalProjects: categoryProjects.length,
+      startIndex: startIndex + 1,
+      endIndex: Math.min(endIndex, categoryProjects.length)
+    };
+  };
+
+  const goToPage = (category: keyof typeof projects, page: number) => {
+    setCurrentPages(prev => ({
+      ...prev,
+      [category]: page
+    }));
+
+    // Smooth scroll to projects section
+    document.getElementById('projects')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
+  const goToPrevious = (category: keyof typeof projects) => {
+    const currentPage = currentPages[category];
+    if (currentPage > 1) {
+      goToPage(category, currentPage - 1);
+    }
+  };
+
+  const goToNext = (category: keyof typeof projects) => {
+    const currentPage = currentPages[category];
+    const totalPages = Math.ceil(projects[category].length / projectsPerPage);
+    if (currentPage < totalPages) {
+      goToPage(category, currentPage + 1);
+    }
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = (category: keyof typeof projects) => {
+    const totalPages = Math.ceil(projects[category].length / projectsPerPage);
+    const currentPage = currentPages[category];
+    const pages = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+
+    return pages;
+  };
+
   const handleViewDetails = (projectId: string) => {
     navigate(`/project/${projectId}`);
   };
@@ -177,6 +269,63 @@ const ProjectsSection = () => {
     </Card>
   );
 
+  // New function to render tab content with pagination
+  const renderTabContent = (category: keyof typeof projects) => {
+    const paginationData = getPaginatedProjects(category);
+
+    return (
+      <TabsContent value={category} className="space-y-6">
+        {/* Projects count info */}
+        <div className="text-center text-sm text-muted-foreground mb-4">
+          Showing {paginationData.startIndex}-{paginationData.endIndex} of {paginationData.totalProjects} projects
+        </div>
+
+        {/* Projects grid with consistent height */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[400px]">
+          {paginationData.projects.map(renderProjectCard)}
+        </div>
+
+        {/* Pagination controls */}
+        {paginationData.totalPages > 1 && (
+          <div className="mt-8 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => goToPrevious(category)}
+                    className={paginationData.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}
+                  />
+                </PaginationItem>
+
+                {getPageNumbers(category).map((page, index) => (
+                  <PaginationItem key={index}>
+                    {page === '...' ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        onClick={() => goToPage(category, page as number)}
+                        isActive={paginationData.currentPage === page}
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => goToNext(category)}
+                    className={paginationData.currentPage === paginationData.totalPages ? 'opacity-50 cursor-not-allowed' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+      </TabsContent>
+    );
+  };
+
   return (
     <section id="projects" className="py-20 scroll-section">
       <div className="container mx-auto px-4">
@@ -222,29 +371,10 @@ const ProjectsSection = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="frontend" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.frontend.map(renderProjectCard)}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="api" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.api.map(renderProjectCard)}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="ai" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.ai.map(renderProjectCard)}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="vibe" className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.vibe.map(renderProjectCard)}
-              </div>
-            </TabsContent>
+            {renderTabContent('frontend')}
+            {renderTabContent('api')}
+            {renderTabContent('ai')}
+            {renderTabContent('vibe')}
           </Tabs>
         </div>
       </div>
