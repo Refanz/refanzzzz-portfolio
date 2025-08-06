@@ -61,7 +61,20 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Neon jungle custom colors
+				neon: {
+					DEFAULT: 'hsl(var(--neon-glow))',
+					secondary: 'hsl(var(--neon-secondary))'
+				},
+				jungle: {
+					deep: 'hsl(var(--jungle-deep))',
+					darker: 'hsl(var(--jungle-darker))'
 				}
+			},
+			fontFamily: {
+				sans: ['Inter', 'system-ui', 'sans-serif'],
+				display: ['Orbitron', 'Inter', 'sans-serif'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -70,25 +83,38 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				'glow-pulse': {
+					'0%, 100%': { boxShadow: '0 0 20px hsl(var(--neon-glow) / 0.3)' },
+					'50%': { boxShadow: '0 0 40px hsl(var(--neon-glow) / 0.6)' }
+				},
+				'float-particle': {
+					'0%, 100%': { transform: 'translateY(0px) rotate(0deg)', opacity: '0.6' },
+					'33%': { transform: 'translateY(-20px) rotate(120deg)', opacity: '0.8' },
+					'66%': { transform: 'translateY(-10px) rotate(240deg)', opacity: '0.4' }
+				},
+				'slide-up': {
+					'0%': { transform: 'translateY(20px)', opacity: '0' },
+					'100%': { transform: 'translateY(0)', opacity: '1' }
+				},
+				'neon-flicker': {
+					'0%, 100%': { textShadow: '0 0 10px hsl(var(--neon-glow) / 0.5)' },
+					'50%': { textShadow: '0 0 20px hsl(var(--neon-glow) / 0.8), 0 0 30px hsl(var(--neon-glow) / 0.3)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+				'float': 'float-particle 6s ease-in-out infinite',
+				'slide-up': 'slide-up 0.6s ease-out',
+				'neon-flicker': 'neon-flicker 3s ease-in-out infinite'
 			}
 		}
 	},
